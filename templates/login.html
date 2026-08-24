@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vistex Format Converter - Login</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <div class="login-wrapper">
+    <div class="glass-card login-card">
+      <div class="login-header">
+        <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px;">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+          </svg>
+        </div>
+        <h1>Vistex Converter</h1>
+        <p>Sign in to access the format converter portal</p>
+      </div>
+
+      <div id="alertError" class="alert alert-error">Invalid username or password</div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" name="username" class="form-input" placeholder="Enter username" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" name="password" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" id="btnLogin" class="btn-primary">
+          <span>Sign In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const alertError = document.getElementById('alertError');
+    const btnLogin = document.getElementById('btnLogin');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertError.style.display = 'none';
+      btnLogin.disabled = true;
+      btnLogin.innerHTML = '<span class="spinner"></span> Authenticating...';
+
+      const formData = new FormData(loginForm);
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          window.location.href = '/dashboard';
+        } else {
+          alertError.textContent = data.detail || 'Invalid username or password';
+          alertError.style.display = 'block';
+        }
+      } catch (err) {
+        alertError.textContent = 'Server connection error. Please try again.';
+        alertError.style.display = 'block';
+      } finally {
+        btnLogin.disabled = false;
+        btnLogin.innerHTML = '<span>Sign In</span>';
+      }
+    });
+  </script>
+</body>
+</html>

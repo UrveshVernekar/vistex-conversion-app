@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vistex Format Converter - Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+        </svg>
+      </div>
+      <div>
+        <span class="brand-title">Vistex Converter</span>
+        <!-- <span class="brand-tag">v2.0</span> -->
+      </div>
+    </a>
+
+    <div class="navbar-actions">
+      <!-- <div class="server-badge">
+        <span class="dot-online"></span>
+        <span>Internal Host: 10.0.7.26</span>
+      </div> -->
+      <a href="/api/logout" class="btn-logout">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <div class="dashboard-header">
+      <h1>Vistex Format Converter</h1>
+      <p>Upload your Excel file to convert formats and generate both .xlsx and .csv output files simultaneously.</p>
+    </div>
+
+    <div class="glass-card">
+      <form id="convertForm">
+        <!-- Mode Selector -->
+        <div class="mode-selector-card">
+          <label for="conversionMode" class="form-label">Conversion Mode</label>
+          <select id="conversionMode" name="mode" class="form-select">
+            <option value="auto" selected>✨ Auto-Detect (Recommended)</option>
+            <option value="script1">Script 1: Upload Format ➔ Flat Output (.xlsx + .csv)</option>
+            <option value="script2">Script 2: Flat Output ➔ Reverse Upload Format (.xlsx + .csv)</option>
+          </select>
+        </div>
+
+        <!-- Dropzone -->
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="fileInput" name="file" accept=".xlsx, .xls, .csv" style="display: none;">
+          <div class="dropzone-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="dropzone-title">Drag & drop your Excel or CSV file here</div>
+          <div class="dropzone-subtitle">or click to browse (.xlsx, .xls, .csv)</div>
+        </div>
+
+        <!-- File Preview -->
+        <div id="filePreview" class="file-preview" style="display: none;">
+          <div class="file-info">
+            <div id="fileTypeBadge" class="file-icon">XLS</div>
+            <div class="file-details">
+              <h4 id="fileName">file.xlsx</h4>
+              <p id="fileSize">0 KB</p>
+            </div>
+          </div>
+          <button type="button" id="btnRemoveFile"
+            style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+
+        <!-- Alert Error -->
+        <div id="convertError" class="alert alert-error" style="margin-top: 20px;"></div>
+
+        <!-- Convert Button -->
+        <button type="submit" id="btnConvert" class="btn-primary" style="margin-top: 24px;" disabled>
+          <span>Convert & Download Both (.xlsx + .csv)</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Results Card -->
+    <div id="resultCard" class="result-card">
+      <div class="result-header">
+        <div
+          style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); display: flex; align-items: center; justify-content: center; font-weight: bold;">
+          ✓</div>
+        <div>
+          <h3>Conversion Completed Successfully!</h3>
+          <p id="resultModeLabel" style="font-size: 0.85rem; color: var(--text-muted);">Mode: Auto-Detected</p>
+        </div>
+      </div>
+
+      <!-- Main Zip Download Button -->
+      <a id="btnZipDownload" href="#" class="btn-zip-download">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Download Both Output Files (.zip Archive)</span>
+      </a>
+
+      <!-- Individual File Downloads -->
+      <p class="form-label" style="margin-bottom: 10px;">Or download files individually:</p>
+      <div class="individual-downloads">
+        <a id="btnXlsxDownload" href="#" class="btn-file-download">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span id="labelXlsx">Download .xlsx</span>
+        </a>
+
+        <a id="btnCsvDownload" href="#" class="btn-file-download">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span id="labelCsv">Download .csv</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Vistex Format Conversion Portal
+  </footer>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const btnRemoveFile = document.getElementById('btnRemoveFile');
+    const btnConvert = document.getElementById('btnConvert');
+    const convertForm = document.getElementById('convertForm');
+    const convertError = document.getElementById('convertError');
+    const resultCard = document.getElementById('resultCard');
+    const resultModeLabel = document.getElementById('resultModeLabel');
+
+    const btnZipDownload = document.getElementById('btnZipDownload');
+    const btnXlsxDownload = document.getElementById('btnXlsxDownload');
+    const btnCsvDownload = document.getElementById('btnCsvDownload');
+    const labelXlsx = document.getElementById('labelXlsx');
+    const labelCsv = document.getElementById('labelCsv');
+
+    let selectedFile = null;
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelect(file) {
+      const lowerName = file.name.toLowerCase();
+      if (!lowerName.endsWith('.xlsx') && !lowerName.endsWith('.xls') && !lowerName.endsWith('.csv')) {
+        convertError.textContent = 'Please select a valid file (.xlsx, .xls, or .csv)';
+        convertError.style.display = 'block';
+        return;
+      }
+
+      selectedFile = file;
+      fileName.textContent = file.name;
+      fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+      const fileBadge = document.getElementById('fileTypeBadge');
+      if (fileBadge) {
+        fileBadge.textContent = lowerName.endsWith('.csv') ? 'CSV' : 'XLS';
+      }
+
+      dropzone.style.display = 'none';
+      filePreview.style.display = 'flex';
+      convertError.style.display = 'none';
+      resultCard.style.display = 'none';
+      btnConvert.disabled = false;
+    }
+
+    btnRemoveFile.addEventListener('click', () => {
+      selectedFile = null;
+      fileInput.value = '';
+      dropzone.style.display = 'block';
+      filePreview.style.display = 'none';
+      btnConvert.disabled = true;
+      resultCard.style.display = 'none';
+    });
+
+    convertForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!selectedFile) return;
+
+      convertError.style.display = 'none';
+      btnConvert.disabled = true;
+      btnConvert.innerHTML = '<span class="spinner"></span> Converting File...';
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('mode', document.getElementById('conversionMode').value);
+
+      try {
+        const response = await fetch('/api/convert', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          resultModeLabel.textContent = 'Processed Mode: ' + data.mode_label;
+
+          // Set download links
+          btnZipDownload.href = data.zip_url;
+          btnXlsxDownload.href = data.xlsx_url;
+
+          if (data.csv_urls && data.csv_urls.length > 0) {
+            btnCsvDownload.href = data.csv_urls[0];
+            labelCsv.textContent = 'Download ' + data.csv_filenames[0];
+          }
+
+          labelXlsx.textContent = 'Download ' + data.xlsx_filename;
+
+          resultCard.style.display = 'block';
+          resultCard.scrollIntoView({ behavior: 'smooth' });
+
+          // Automatically trigger the zip download (contains both .xlsx and .csv)
+          const downloadAnchor = document.createElement('a');
+          downloadAnchor.href = data.zip_url;
+          downloadAnchor.download = data.zip_filename;
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          document.body.removeChild(downloadAnchor);
+        } else {
+          convertError.textContent = data.detail || 'Failed to convert file. Please check input format.';
+          convertError.style.display = 'block';
+        }
+      } catch (err) {
+        convertError.textContent = 'Server conversion error. Please try again.';
+        convertError.style.display = 'block';
+      } finally {
+        btnConvert.disabled = false;
+        btnConvert.innerHTML = '<span>Convert & Download Both (.xlsx + .csv)</span>';
+      }
+    });
+  </script>
+</body>
+
+</html>

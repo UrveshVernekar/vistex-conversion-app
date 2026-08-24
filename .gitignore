@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary and generated file directories
+Temp/
+temp/
+tmp/
+*.tmp
+
+# Ignore generated output files
+output*.xlsx
+reverse-output*.xlsx
+*_converted_output*
+*_reverse_upload*
+*.csv
+*.zip
+*-old.xlsx
+*-bkp.py
+test_*.xlsx
+
+# Environment & Virtual environments
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
