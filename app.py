@@ -95,6 +95,33 @@ async def dashboard_page(request: Request):
     return templates.TemplateResponse(request, "dashboard.html", {"user": user})
 
 
+@app.get("/manuals", response_class=HTMLResponse)
+async def manuals_page(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    return templates.TemplateResponse(request, "manuals.html", {"user": user})
+
+
+@app.get("/api/manuals/download/{filename}")
+async def api_manuals_download(filename: str, request: Request):
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    safe_filename = os.path.basename(filename)
+    file_path = os.path.join(BASE_DIR, safe_filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Manual file not found")
+
+    return FileResponse(
+        path=file_path,
+        filename=safe_filename,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
 @app.post("/api/convert")
 async def api_convert(
     request: Request,
