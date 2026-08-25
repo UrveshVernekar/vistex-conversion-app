@@ -98,6 +98,91 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
 
         data_rows = df_out.iloc[3:].copy()
 
+        # Build dynamic section ranges for current sheet
+        def build_dynamic_ranges(tag_row_list, total_cols):
+            blocks = []
+            for idx, tag in enumerate(tag_row_list):
+                if pd.notna(tag) and str(tag).strip():
+                    blocks.append((str(tag).strip().upper(), idx))
+            
+            if not blocks:
+                return {}
+
+            raw_ranges = []
+            for i in range(len(blocks)):
+                tag_name, start_idx = blocks[i]
+                end_idx = blocks[i+1][1] - 1 if i + 1 < len(blocks) else total_cols - 1
+                raw_ranges.append((tag_name, start_idx, end_idx))
+
+            dynamic_ranges = {}
+            fghd_count = 0
+            fgit_count = 0
+            benefits_count = 0
+            bsa_count = 0
+            bs_count = 0
+
+            for tag_name, start_c, end_c in raw_ranges:
+                if tag_name == 'HEADER':
+                    dynamic_ranges['HEADER'] = (start_c, end_c)
+                elif tag_name == 'AGRMT':
+                    dynamic_ranges['AGRMT'] = (start_c, end_c)
+                elif tag_name == 'SUBAGRMT':
+                    dynamic_ranges['SUBAGRMT'] = (start_c, end_c)
+                elif tag_name == 'ELCUST':
+                    dynamic_ranges['ELCUST'] = (start_c, end_c)
+                elif tag_name == 'FGHD':
+                    fghd_count += 1
+                    key = 'FGHD_CUST' if fghd_count == 1 else ('FGHD_PRD' if fghd_count == 2 else f'FGHD_{fghd_count}')
+                    dynamic_ranges[key] = (start_c, end_c)
+                elif tag_name == 'FGIT':
+                    fgit_count += 1
+                    key = 'FGIT_CUST' if fgit_count == 1 else ('FGIT_PRD' if fgit_count == 2 else f'FGIT_{fgit_count}')
+                    dynamic_ranges[key] = (start_c, end_c)
+                elif tag_name == 'ELGBBASE':
+                    dynamic_ranges['ELGBBASE'] = (start_c, end_c)
+                elif tag_name == 'ELGBASEVAL':
+                    dynamic_ranges['ELGBASEVAL'] = (start_c, end_c)
+                elif tag_name == 'ELGBPRDGRP':
+                    dynamic_ranges['ELGBPRDGRP'] = (start_c, end_c)
+                elif tag_name == 'BENEFITS':
+                    benefits_count += 1
+                    key = 'BENEFITS' if benefits_count == 1 else f'BENEFITS{benefits_count}'
+                    dynamic_ranges[key] = (start_c, end_c)
+                elif tag_name == 'BSA':
+                    bsa_count += 1
+                    key = 'BSA' if bsa_count == 1 else f'BSA{bsa_count}'
+                    dynamic_ranges[key] = (start_c, end_c)
+                elif tag_name == 'BS':
+                    bs_count += 1
+                    key = 'BS' if bs_count == 1 else f'BS{bs_count}'
+                    dynamic_ranges[key] = (start_c, end_c)
+                elif tag_name == 'ACCRTE':
+                    dynamic_ranges['ACCRTE'] = (start_c, end_c)
+                else:
+                    dynamic_ranges[tag_name] = (start_c, end_c)
+
+            return dynamic_ranges
+
+        ranges = build_dynamic_ranges(tag_row, len(col_row))
+
+        def get_col_idx(section_key, col_name, fallback=None):
+            if section_key in ranges:
+                start_c, end_c = ranges[section_key]
+                norm_col_name = str(col_name).strip().lower().replace(" ", "").replace("-", "")
+                for i in range(start_c, min(end_c + 1, len(col_row))):
+                    c_val = str(col_row[i]).strip().lower().replace(" ", "").replace("-", "") if pd.notna(col_row[i]) else ""
+                    if c_val == norm_col_name:
+                        return i
+            return fallback
+
+        def get_val(row_list, section_key, col_name, fallback_index=None):
+            idx = get_col_idx(section_key, col_name, fallback_index)
+            if idx is not None and idx < len(row_list):
+                v = row_list[idx]
+                if pd.notna(v):
+                    return v
+            return None
+
         # Parse output data rows into Master Agreement & Sub Agreement objects
         master_agreements = []
         curr_master = None
@@ -107,38 +192,44 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
             row_list = list(row)
             
             # Check Master Agreement ID in Col 1
-            ma_id = str(row_list[1]).strip() if pd.notna(row_list[1]) else None
-            # Check Sub Agreement ID in Col 8 or Processing Sequence in Col 7
-            sa_id = str(row_list[8]).strip() if pd.notna(row_list[8]) else None
-            proc_seq = row_list[7] if pd.notna(row_list[7]) else None
+            ma_id = get_val(row_list, 'AGRMT', 'Master Agreement External ID', 1)
+            ma_id_str = str(ma_id).strip() if ma_id else None
 
-            if not curr_master or (ma_id and curr_master['ma_id'] != ma_id):
+            # Check Sub Agreement ID or Processing Sequence
+            sa_id = get_val(row_list, 'SUBAGRMT', 'Sub Agreement External ID', 8)
+            sa_id_str = str(sa_id).strip() if sa_id else None
+            proc_seq = get_val(row_list, 'SUBAGRMT', 'Processing Sequence', 7)
+
+            if not curr_master or (ma_id_str and curr_master['ma_id'] != ma_id_str):
                 curr_master = {
-                    'ma_id': ma_id,
-                    'header': {'Request Description': row_list[0] if pd.notna(row_list[0]) else ma_id},
+                    'ma_id': ma_id_str,
+                    'header': {'Request Description': get_val(row_list, 'HEADER', 'MR AG Upload 21', 0) or ma_id_str},
                     'agrmt': {
-                        'Master Agreement External ID': row_list[1] if pd.notna(row_list[1]) else '',
-                        'Master Agreement Description': row_list[2] if pd.notna(row_list[2]) else '',
-                        'Company': row_list[3] if pd.notna(row_list[3]) else '',
-                        'Business Unit': row_list[4] if pd.notna(row_list[4]) else '',
-                        'Legal Valid From': row_list[5] if pd.notna(row_list[5]) else '',
-                        'Legal Valid To': row_list[6] if pd.notna(row_list[6]) else ''
+                        'Master Agreement External ID': get_val(row_list, 'AGRMT', 'Master Agreement External ID', 1) or '',
+                        'Master Agreement Description': get_val(row_list, 'AGRMT', 'Master Agreement Description', 2) or '',
+                        'Company': get_val(row_list, 'AGRMT', 'Company', 3) or '',
+                        'Business Unit': get_val(row_list, 'AGRMT', 'Business Unit', 4) or '',
+                        'Legal Valid From': get_val(row_list, 'AGRMT', 'Valid From', 5) or '',
+                        'Legal Valid To': get_val(row_list, 'AGRMT', 'Valid To', 6) or ''
                     },
                     'sub_agreements': []
                 }
                 master_agreements.append(curr_master)
 
-            if sa_id or proc_seq or not curr_master['sub_agreements']:
+            if sa_id_str or proc_seq or not curr_master['sub_agreements']:
                 curr_sub = {
                     'subagrmt': {
-                        'Processing Sequence': proc_seq if pd.notna(proc_seq) else len(curr_master['sub_agreements']) + 1,
-                        'Sub Agreement External ID': sa_id if sa_id else '',
-                        'Sub Agreement Description': row_list[9] if pd.notna(row_list[9]) else sa_id,
-                        'Sub Agreement Program': row_list[10] if pd.notna(row_list[10]) else '',
-                        'Period Profile': row_list[13] if pd.notna(row_list[13]) else '',
-                        'Settlement Frequency': row_list[14] if pd.notna(row_list[14]) else '',
-                        'Legal Valid From': row_list[11] if pd.notna(row_list[11]) else '',
-                        'Legal Valid To': row_list[12] if pd.notna(row_list[12]) else ''
+                        'Processing Sequence': proc_seq if proc_seq is not None else len(curr_master['sub_agreements']) + 1,
+                        'Sub Agreement External ID': sa_id_str if sa_id_str else '',
+                        'Sub Agreement Description': get_val(row_list, 'SUBAGRMT', 'Sub Agreement Description', 9) or sa_id_str or '',
+                        'Sub Agreement Program': get_val(row_list, 'SUBAGRMT', 'Sub Agreement Program', 10) or '',
+                        'Period Profile': get_val(row_list, 'SUBAGRMT', 'Period Profile', 11) or '',
+                        'Accrual Frequency': get_val(row_list, 'SUBAGRMT', 'Accrual Frequency', 12) or 'MD',
+                        'Settlement Frequency': get_val(row_list, 'SUBAGRMT', 'Settlement Frequency', 13) or '',
+                        'GST Indicator': get_val(row_list, 'SUBAGRMT', 'GST Indicator', 14) or 'N',
+                        'Key for Prov G/L': get_val(row_list, 'SUBAGRMT', 'Key for Prov G/L', 15) or 'T',
+                        'Legal Valid From': get_val(row_list, 'SUBAGRMT', 'Valid From', 16) or '',
+                        'Legal Valid To': get_val(row_list, 'SUBAGRMT', 'Valid To', 17) or ''
                     },
                     'elcust': [],
                     'elgbbase': [],
@@ -159,172 +250,187 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
                 sub_ext_id = curr_sub['subagrmt'].get('Sub Agreement External ID', '')
                 
                 # ELCUST
-                if pd.notna(row_list[16]):
+                cust_ext_id = get_val(row_list, 'ELCUST', 'Customer External ID')
+                if cust_ext_id:
                     add_if_unique(curr_sub['elcust'], {
-                        'Sub-Agreement External ID': row_list[15] if pd.notna(row_list[15]) else sub_ext_id,
-                        'Customer External ID': row_list[16],
-                        'Flexible Group': row_list[17] if pd.notna(row_list[17]) else '',
-                        'Valid From': row_list[18] if pd.notna(row_list[18]) else '',
-                        'Valid To': row_list[19] if pd.notna(row_list[19]) else ''
+                        'Sub-Agreement External ID': get_val(row_list, 'ELCUST', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Customer External ID': cust_ext_id,
+                        'Flexible Group': get_val(row_list, 'ELCUST', 'Flexible Group') or '',
+                        'Valid From': get_val(row_list, 'ELCUST', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'ELCUST', 'Valid To') or ''
                     }, 'Customer External ID')
 
                 # ELGBBASE
-                if pd.notna(row_list[57]):
+                base_val = get_val(row_list, 'ELGBBASE', 'Base Value')
+                if base_val:
                     add_if_unique(curr_sub['elgbbase'], {
-                        'Sub-Agreement External ID': row_list[56] if pd.notna(row_list[56]) else sub_ext_id,
-                        'Base Value': row_list[57],
-                        'Valid From': row_list[11] if pd.notna(row_list[11]) else '',
-                        'Valid To': row_list[12] if pd.notna(row_list[12]) else ''
+                        'Sub-Agreement External ID': get_val(row_list, 'ELGBBASE', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Base Value': base_val,
+                        'Valid From': get_val(row_list, 'ELGBBASE', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'ELGBBASE', 'Valid To') or ''
                     }, 'Base Value')
 
                 # ELGBASEVAL
-                if pd.notna(row_list[59]):
+                base_val_detail = get_val(row_list, 'ELGBASEVAL', 'Base Value')
+                if base_val_detail:
                     add_if_unique(curr_sub['elgbaseval'], {
-                        'Sub-Agreement External ID': row_list[58] if pd.notna(row_list[58]) else sub_ext_id,
-                        'Base Value': row_list[59],
-                        'Source': row_list[60] if pd.notna(row_list[60]) else '',
-                        'Source Field': row_list[61] if pd.notna(row_list[61]) else '',
-                        'Sequence': row_list[62] if pd.notna(row_list[62]) else 1,
-                        'Contribution': row_list[63] if pd.notna(row_list[63]) else '+',
-                        'Eligibility %': row_list[64] if pd.notna(row_list[64]) else 100,
-                        'Valid From': row_list[11] if pd.notna(row_list[11]) else '',
-                        'Valid To': row_list[12] if pd.notna(row_list[12]) else ''
+                        'Sub-Agreement External ID': get_val(row_list, 'ELGBASEVAL', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Base Value': base_val_detail,
+                        'Source': get_val(row_list, 'ELGBASEVAL', 'Source') or '',
+                        'Source Field': get_val(row_list, 'ELGBASEVAL', 'Source Field') or '',
+                        'Sequence': get_val(row_list, 'ELGBASEVAL', 'Sequence') or 1,
+                        'Contribution': get_val(row_list, 'ELGBASEVAL', 'Contribution') or '+',
+                        'Eligibility %': get_val(row_list, 'ELGBASEVAL', 'Eligibility %') or 100,
+                        'Valid From': get_val(row_list, 'ELGBASEVAL', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'ELGBASEVAL', 'Valid To') or ''
                     }, 'Base Value')
 
                 # FGHD Cust
-                if pd.notna(row_list[20]):
+                fghd_c_desc = get_val(row_list, 'FGHD_CUST', 'Description')
+                if fghd_c_desc:
                     add_if_unique(curr_sub['fghd_cust'], {
-                        'Description': row_list[20],
-                        'Object Type': row_list[21] if pd.notna(row_list[21]) else '',
-                        'Local': row_list[22] if pd.notna(row_list[22]) else '',
-                        'Flexible Group Type': row_list[23] if pd.notna(row_list[23]) else '',
-                        'Flexible Group Request': row_list[24] if pd.notna(row_list[24]) else '',
-                        'Valid From': row_list[25] if pd.notna(row_list[25]) else '',
-                        'Valid To': row_list[26] if pd.notna(row_list[26]) else ''
+                        'Description': fghd_c_desc,
+                        'Object Type': get_val(row_list, 'FGHD_CUST', 'Object Type') or '',
+                        'Local': get_val(row_list, 'FGHD_CUST', 'Local') or '',
+                        'Flexible Group Type': get_val(row_list, 'FGHD_CUST', 'Flexible Group Type') or '',
+                        'Flexible Group Request': get_val(row_list, 'FGHD_CUST', 'Flexible Group Request') or '',
+                        'Valid From': get_val(row_list, 'FGHD_CUST', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'FGHD_CUST', 'Valid To') or ''
                     }, 'Description')
 
                 # FGIT Cust
-                if any(pd.notna(row_list[c]) for c in range(27, 55)):
+                fgit_c_cat = get_val(row_list, 'FGIT_CUST', 'Flexible Group Category')
+                if fgit_c_cat:
                     fgit_c_item = {
-                        'Flexible Group Category': row_list[27] if pd.notna(row_list[27]) else '',
-                        'Include/Exclude': row_list[28] if pd.notna(row_list[28]) else 'X',
-                        'Material External ID': row_list[29] if pd.notna(row_list[29]) else '',
-                        'Material Group': row_list[31] if pd.notna(row_list[31]) else '',
-                        'Capacity': row_list[32] if pd.notna(row_list[32]) else '',
-                        'Customer Group': row_list[46] if pd.notna(row_list[46]) else '',
-                        'Region': row_list[47] if pd.notna(row_list[47]) else '',
-                        'State': row_list[48] if pd.notna(row_list[48]) else '',
-                        'Territory/Sales Area': row_list[49] if pd.notna(row_list[49]) else '',
-                        'Plant': row_list[50] if pd.notna(row_list[50]) else '',
-                        'Cluster of Customer': row_list[51] if pd.notna(row_list[51]) else '',
-                        'Subset': row_list[52] if pd.notna(row_list[52]) else '',
-                        'Set Number': row_list[53] if pd.notna(row_list[53]) else 1,
-                        'Flexible Group Request': row_list[54] if pd.notna(row_list[54]) else ''
+                        'Flexible Group Category': fgit_c_cat,
+                        'Include/Exclude': get_val(row_list, 'FGIT_CUST', 'Include/Exclude') or 'X',
+                        'Material External ID': get_val(row_list, 'FGIT_CUST', 'Material External ID') or '',
+                        'Material Group': get_val(row_list, 'FGIT_CUST', 'Material Group') or '',
+                        'Capacity': get_val(row_list, 'FGIT_CUST', 'Capacity') or '',
+                        'Customer Group': get_val(row_list, 'FGIT_CUST', 'Customer Group') or '',
+                        'Region': get_val(row_list, 'FGIT_CUST', 'Region') or '',
+                        'State': get_val(row_list, 'FGIT_CUST', 'State') or '',
+                        'Territory/Sales Area': get_val(row_list, 'FGIT_CUST', 'Territory/Sales Area') or '',
+                        'Plant': get_val(row_list, 'FGIT_CUST', 'Plant') or '',
+                        'Cluster of Customer': get_val(row_list, 'FGIT_CUST', 'Cluster of Customer') or '',
+                        'Liquidation': get_val(row_list, 'FGIT_CUST', 'Liquidation') or '',
+                        'Subset': get_val(row_list, 'FGIT_CUST', 'Subset') or '',
+                        'Set Number': get_val(row_list, 'FGIT_CUST', 'Set Number') or 1,
+                        'Flexible Group Request': get_val(row_list, 'FGIT_CUST', 'Flexible Group Request') or ''
                     }
                     if fgit_c_item not in curr_sub['fgit_cust']:
                         curr_sub['fgit_cust'].append(fgit_c_item)
 
                 # ELGBPRDGRP
-                if pd.notna(row_list[66]):
+                grp_name = get_val(row_list, 'ELGBPRDGRP', 'Group Name')
+                if grp_name:
                     add_if_unique(curr_sub['elgbprdgrp'], {
-                        'Sub-Agreement External ID': row_list[65] if pd.notna(row_list[65]) else sub_ext_id,
-                        'Group Name': row_list[66],
-                        'Group Type': row_list[67] if pd.notna(row_list[67]) else '',
-                        'Source': row_list[68] if pd.notna(row_list[68]) else '',
-                        'Flexible Group': row_list[69] if pd.notna(row_list[69]) else '',
-                        'Valid From': row_list[70] if pd.notna(row_list[70]) else '',
-                        'Valid To': row_list[71] if pd.notna(row_list[71]) else ''
+                        'Sub-Agreement External ID': get_val(row_list, 'ELGBPRDGRP', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Group Name': grp_name,
+                        'Group Type': get_val(row_list, 'ELGBPRDGRP', 'Group Type') or '',
+                        'Source': get_val(row_list, 'ELGBPRDGRP', 'Source') or '',
+                        'Flexible Group': get_val(row_list, 'ELGBPRDGRP', 'Flexible Group') or '',
+                        'Valid From': get_val(row_list, 'ELGBPRDGRP', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'ELGBPRDGRP', 'Valid To') or ''
                     }, 'Group Name')
 
                 # FGHD Prd
-                if pd.notna(row_list[72]):
+                fghd_p_desc = get_val(row_list, 'FGHD_PRD', 'Description')
+                if fghd_p_desc:
                     add_if_unique(curr_sub['fghd_prd'], {
-                        'Description': row_list[72],
-                        'Object Type': row_list[73] if pd.notna(row_list[73]) else '',
-                        'Local': row_list[74] if pd.notna(row_list[74]) else '',
-                        'Flexible Group Type': row_list[75] if pd.notna(row_list[75]) else '',
-                        'Flexible Group Request': row_list[76] if pd.notna(row_list[76]) else '',
-                        'Valid From': row_list[77] if pd.notna(row_list[77]) else '',
-                        'Valid To': row_list[78] if pd.notna(row_list[78]) else ''
+                        'Description': fghd_p_desc,
+                        'Object Type': get_val(row_list, 'FGHD_PRD', 'Object Type') or '',
+                        'Local': get_val(row_list, 'FGHD_PRD', 'Local') or '',
+                        'Flexible Group Type': get_val(row_list, 'FGHD_PRD', 'Flexible Group Type') or '',
+                        'Flexible Group Request': get_val(row_list, 'FGHD_PRD', 'Flexible Group Request') or '',
+                        'Valid From': get_val(row_list, 'FGHD_PRD', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'FGHD_PRD', 'Valid To') or ''
                     }, 'Description')
 
                 # FGIT Prd
-                if any(pd.notna(row_list[c]) for c in range(79, 107)):
+                fgit_p_cat = get_val(row_list, 'FGIT_PRD', 'Flexible Group Category')
+                if fgit_p_cat:
                     fgit_p_item = {
-                        'Flexible Group Category': row_list[79] if pd.notna(row_list[79]) else '',
-                        'Include/Exclude': row_list[80] if pd.notna(row_list[80]) else 'X',
-                        'Material External ID': row_list[81] if pd.notna(row_list[81]) else '',
-                        'Product Hierarchy': row_list[82] if pd.notna(row_list[82]) else '',
-                        'Material Group': row_list[83] if pd.notna(row_list[83]) else '',
-                        'Capacity': row_list[84] if pd.notna(row_list[84]) else '',
-                        'Series': row_list[85] if pd.notna(row_list[85]) else '',
-                        'Star Rating': row_list[86] if pd.notna(row_list[86]) else '',
-                        'Star Rating Year': row_list[87] if pd.notna(row_list[87]) else '',
-                        'Feature 1': row_list[88] if pd.notna(row_list[88]) else '',
-                        'Feature 2': row_list[89] if pd.notna(row_list[89]) else '',
-                        'Feature 3': row_list[90] if pd.notna(row_list[90]) else '',
-                        'Feature 4': row_list[91] if pd.notna(row_list[91]) else '',
-                        'Feature 5': row_list[92] if pd.notna(row_list[92]) else '',
-                        'Feature 6': row_list[93] if pd.notna(row_list[93]) else '',
-                        'Feature 7': row_list[94] if pd.notna(row_list[94]) else '',
-                        'Feature 8': row_list[95] if pd.notna(row_list[95]) else '',
-                        'Feature 9': row_list[96] if pd.notna(row_list[96]) else '',
-                        'Feature 10': row_list[97] if pd.notna(row_list[97]) else '',
-                        'Customer Group': row_list[98] if pd.notna(row_list[98]) else '',
-                        'Region': row_list[99] if pd.notna(row_list[99]) else '',
-                        'State': row_list[100] if pd.notna(row_list[100]) else '',
-                        'Territory/Sales Area': row_list[101] if pd.notna(row_list[101]) else '',
-                        'Plant': row_list[102] if pd.notna(row_list[102]) else '',
-                        'Cluster of Customer': row_list[103] if pd.notna(row_list[103]) else '',
-                        'Subset': row_list[104] if pd.notna(row_list[104]) else '',
-                        'Set Number': row_list[105] if pd.notna(row_list[105]) else 1,
-                        'Flexible Group Request': row_list[106] if pd.notna(row_list[106]) else ''
+                        'Flexible Group Category': fgit_p_cat,
+                        'Include/Exclude': get_val(row_list, 'FGIT_PRD', 'Include/Exclude') or 'X',
+                        'Material External ID': get_val(row_list, 'FGIT_PRD', 'Material External ID') or '',
+                        'Product Hierarchy': get_val(row_list, 'FGIT_PRD', 'Product Hierarchy') or '',
+                        'Material Group': get_val(row_list, 'FGIT_PRD', 'Material Group') or '',
+                        'Capacity': get_val(row_list, 'FGIT_PRD', 'Capacity') or '',
+                        'Series': get_val(row_list, 'FGIT_PRD', 'Series') or '',
+                        'Star Rating': get_val(row_list, 'FGIT_PRD', 'Star Rating') or '',
+                        'Star Rating Year': get_val(row_list, 'FGIT_PRD', 'Star Rating Year') or '',
+                        'Feature 1': get_val(row_list, 'FGIT_PRD', 'Feature 1') or '',
+                        'Feature 2': get_val(row_list, 'FGIT_PRD', 'Feature 2') or '',
+                        'Feature 3': get_val(row_list, 'FGIT_PRD', 'Feature 3') or '',
+                        'Feature 4': get_val(row_list, 'FGIT_PRD', 'Feature 4') or '',
+                        'Feature 5': get_val(row_list, 'FGIT_PRD', 'Feature 5') or '',
+                        'Feature 6': get_val(row_list, 'FGIT_PRD', 'Feature 6') or '',
+                        'Feature 7': get_val(row_list, 'FGIT_PRD', 'Feature 7') or '',
+                        'Feature 8': get_val(row_list, 'FGIT_PRD', 'Feature 8') or '',
+                        'Feature 9': get_val(row_list, 'FGIT_PRD', 'Feature 9') or '',
+                        'Feature 10': get_val(row_list, 'FGIT_PRD', 'Feature 10') or '',
+                        'Customer Group': get_val(row_list, 'FGIT_PRD', 'Customer Group') or '',
+                        'Region': get_val(row_list, 'FGIT_PRD', 'Region') or '',
+                        'State': get_val(row_list, 'FGIT_PRD', 'State') or '',
+                        'Territory/Sales Area': get_val(row_list, 'FGIT_PRD', 'Territory/Sales Area') or '',
+                        'Plant': get_val(row_list, 'FGIT_PRD', 'Plant') or '',
+                        'Cluster of Customer': get_val(row_list, 'FGIT_PRD', 'Cluster of Customer') or '',
+                        'Liquidation': get_val(row_list, 'FGIT_PRD', 'Liquidation') or '',
+                        'Subset': get_val(row_list, 'FGIT_PRD', 'Subset') or '',
+                        'Set Number': get_val(row_list, 'FGIT_PRD', 'Set Number') or 1,
+                        'Flexible Group Request': get_val(row_list, 'FGIT_PRD', 'Flexible Group Request') or ''
                     }
                     if fgit_p_item not in curr_sub['fgit_prd']:
                         curr_sub['fgit_prd'].append(fgit_p_item)
 
                 # BENEFITS
-                if pd.notna(row_list[145]):
+                payout_grp = get_val(row_list, 'BENEFITS', 'Payout Group')
+                if payout_grp:
                     sub_vf = curr_sub['subagrmt'].get('Legal Valid From', '')
                     sub_vt = curr_sub['subagrmt'].get('Legal Valid To', '')
                     add_if_unique(curr_sub['benefits'], {
-                        'Sub-Agreement External ID': row_list[144] if pd.notna(row_list[144]) else sub_ext_id,
-                        'Payout Group': row_list[145],
-                        'Attain Group': '',
-                        'Rate': '',
-                        'Target Type': row_list[146] if pd.notna(row_list[146]) else '',
-                        'Target Value': row_list[147] if pd.notna(row_list[147]) else '',
-                        'Currency(%)': row_list[148] if pd.notna(row_list[148]) else '',
-                        'Target Unit': row_list[149] if pd.notna(row_list[149]) else '',
-                        'Valid From': sub_vf,
-                        'Valid To': sub_vt
+                        'Sub-Agreement External ID': get_val(row_list, 'BENEFITS', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Payout Group': payout_grp,
+                        'Attain Group': get_val(row_list, 'BENEFITS', 'Attain Group') or '',
+                        'Rate': get_val(row_list, 'BENEFITS', 'Rate') or '',
+                        'Target Type': get_val(row_list, 'BENEFITS', 'Target Type') or '',
+                        'Target Value': get_val(row_list, 'BENEFITS', 'Target Value') or '',
+                        'Currency(%)': get_val(row_list, 'BENEFITS', 'Target Unit') or get_val(row_list, 'BENEFITS', 'Currency(%)') or '',
+                        'Target Unit': get_val(row_list, 'BENEFITS', 'Target Unit') or '',
+                        'Valid From': get_val(row_list, 'BENEFITS', 'Valid From') or sub_vf,
+                        'Valid To': get_val(row_list, 'BENEFITS', 'Valid To') or sub_vt
                     }, 'Payout Group')
 
                 # BSA
-                if pd.notna(row_list[151]):
+                bsa_brk = get_val(row_list, 'BSA', 'Bracket')
+                if bsa_brk:
                     add_if_unique(curr_sub['bsa'], {
-                        'Bracket': row_list[151],
-                        'Scale Type': row_list[152] if pd.notna(row_list[152]) else '',
-                        'Unit': row_list[153] if pd.notna(row_list[153]) else '',
-                        'Unit Type': row_list[154] if pd.notna(row_list[154]) else ''
+                        'Bracket': bsa_brk,
+                        'Scale Type': get_val(row_list, 'BSA', 'Scale Type') or '',
+                        'Unit': get_val(row_list, 'BSA', 'Unit') or '',
+                        'Unit Type': get_val(row_list, 'BSA', 'Unit Type') or ''
                     }, 'Bracket')
 
                 # ACCRTE
-                if pd.notna(row_list[171]):
+                acc_pg = get_val(row_list, 'ACCRTE', 'Payout Group')
+                if acc_pg:
                     add_if_unique(curr_sub['accrte'], {
-                        'Sub-Agreement External ID': row_list[170] if pd.notna(row_list[170]) else sub_ext_id,
-                        'Payout Group': row_list[171],
-                        'Rate': row_list[172] if pd.notna(row_list[172]) else '',
-                        'Currency(%)': row_list[148] if pd.notna(row_list[148]) else 'INR',
-                        'Valid From': row_list[173] if pd.notna(row_list[173]) else '',
-                        'Valid To': row_list[174] if pd.notna(row_list[174]) else ''
+                        'Sub-Agreement External ID': get_val(row_list, 'ACCRTE', 'Sub-Agreement External ID') or sub_ext_id,
+                        'Payout Group': acc_pg,
+                        'Rate': get_val(row_list, 'ACCRTE', 'Rate') or '',
+                        'Currency(%)': 'INR',
+                        'Valid From': get_val(row_list, 'ACCRTE', 'Valid From') or '',
+                        'Valid To': get_val(row_list, 'ACCRTE', 'Valid To') or ''
                     }, 'Payout Group')
 
                 # BS (Scales)
-                if pd.notna(row_list[155]):
+                bs_dim = get_val(row_list, 'BS', 'Dimension Value1')
+                if bs_dim:
                     curr_sub['bs'].append({
-                        'Dimension Value1': row_list[155],
-                        'Rate': row_list[156] if pd.notna(row_list[156]) else ''
+                        'Dimension Value1': bs_dim,
+                        'Rate': get_val(row_list, 'BS', 'Rate') or '',
+                        'Calculation Derivation Record': get_val(row_list, 'BS', 'Calculation Derivation Record') or ''
                     })
 
         # Reconstruct vertical block section rows matching Upload Format.xlsx layout

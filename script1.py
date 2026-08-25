@@ -11,58 +11,69 @@ from formats import get_program_format_type, get_section_headers
 # Eliminates external dependency on Output.xlsx
 TEMPLATE_SECTION_HEADER = [
     "Request Header", "Master Agreement Header", None, None, None, None, None,
-    "Sub Agreement Header", None, None, None, None, None, None, None,
+    "Sub Agreement Header", None, None, None, None, None, None, None, None, None, None,
     "Eligibility of Customer Validity", None, None, None, None,
     "Eligibility of Customer Group", None, None, None, None, None, None,
-    "Eligibility of Customer Group Category\n", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    "Source & base Units ", None, None, None, None, None, None, None, None,
-    "Eligible Product Grouping ", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    "Benefits and respective Scales ", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "Eligibility of Customer Group Category\n", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "Source & base Units ", None, None, None,
+    "Eligible Base Values", None, None, None, None, None, None, None, None,
+    "Eligible Product Grouping ", None, None, None, None, None, None,
+    "Eligible Product Group Header", None, None, None, None, None, None,
+    "Eligible Product Group Details", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "Flexible Group Header", None, None, None, None, None, None,
+    "Flexible Group Details", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "Benefits and respective Scales ", None, None, None, None, None, None, None, None,
+    "Bracket / Scale Area", None, None, None,
+    "Bracket Scale Details", None, None,
+    "Benefits and respective Scales ", None, None, None, None, None, None, None, None,
+    "Bracket / Scale Area", None, None, None,
+    "Bracket Scale Details", None, None,
     "Accrual Rule ", None, None, None, None
 ]
 
 
 TEMPLATE_TAG_HEADER = [
     "HEADER", "AGRMT", None, None, None, None, None,
-    "SUBAGRMT", None, None, None, None, None, None, None,
+    "SUBAGRMT", None, None, None, None, None, None, None, None, None, None,
     "ELCUST", None, None, None, None,
     "FGHD", None, None, None, None, None, None,
-    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    "ELGBBASE", None, "ELGBASEVAL", None, None, None, None, None, None,
+    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "ELGBBASE", None, None, None,
+    "ELGBASEVAL", None, None, None, None, None, None, None, None,
     "ELGBPRDGRP", None, None, None, None, None, None,
     "FGHD", None, None, None, None, None, None,
-    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
     "FGHD", None, None, None, None, None, None,
-    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
-    "BENEFITS", None, None, None, None, None, None,
+    "FGIT", None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+    "BENEFITS", None, None, None, None, None, None, None, None,
     "BSA", None, None, None,
-    "BS", None,
-    "BENEFITS", None, None, None, None, None, None,
+    "BS", None, None,
+    "BENEFITS", None, None, None, None, None, None, None, None,
     "BSA", None, None, None,
-    "BS", None,
+    "BS", None, None,
     "ACCRTE", None, None, None, None
 ]
 
 
 TEMPLATE_COLUMN_HEADER = [
     "MR AG Upload 21", "Master Agreement External ID", "Master Agreement Description", "Company", "Business Unit", "Valid From", "Valid To",
-    "Processing Sequence", "Sub Agreement External ID", "Sub Agreement Description", "Sub Agreement Program", "Valid From", "Valid To", "Period Profile", "Settlement Frequency",
+    "Processing Sequence", "Sub Agreement External ID", "Sub Agreement Description", "Sub Agreement Program", "Period Profile", "Accrual Frequency", "Settlement Frequency", "GST Indicator", "Key for Prov G/L", "Valid From", "Valid To",
     "Sub-Agreement External ID", "Customer External ID", "Flexible Group", "Valid From", "Valid To",
     "Description", "Object Type", "Local", "Flexible Group Type", "Flexible Group Request", "Valid From", "Valid To",
-    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Subset", "Set Number", "Flexible Group Request", "Request Action",
-    "Sub-Agreement External ID", "Base Value",
-    "Sub-Agreement External ID", "Base Value", "Source", "Source Field", "Sequence", "Contribution", "Eligibility %",
+    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Liquidation", "Subset", "Set Number", "Flexible Group Request",
+    "Sub-Agreement External ID", "Base Value", "Valid From", "Valid To",
+    "Sub-Agreement External ID", "Base Value", "Source", "Source Field", "Sequence", "Contribution", "Eligibility %", "Valid From", "Valid To",
     "Sub-Agreement External ID", "Group Name", "Group Type", "Source", "Flexible Group", "Valid From", "Valid To",
     "Description", "Object Type", "Local", "Flexible Group Type", "Flexible Group Request", "Valid From", "Valid To",
-    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Subset", "Set Number", "Flexible Group Request", "Request Action",
+    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Liquidation", "Subset", "Set Number", "Flexible Group Request",
     "Description", "Object Type", "Local", "Flexible Group Type", "Flexible Group Request", "Valid From", "Valid To",
-    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Subset", "Set Number", "Flexible Group Request", "Request Action",
-    "Sub-Agreement External ID", "Payout Group", "Rate Type", "Rate", "Payout Unit", "Payout Uni", "Dummy",
+    "Flexible Group Category", "Include/Exclude", "Material External ID", "Product Hierarchy", "Material Group", "Capacity", "Series", "Star Rating", "Star Rating Year", "Feature 1", "Feature 2", "Feature 3", "Feature 4", "Feature 5", "Feature 6", "Feature 7", "Feature 8", "Feature 9", "Feature 10", "Customer Group", "Region", "State", "Territory/Sales Area", "Plant", "Cluster of Customer", "Liquidation", "Subset", "Set Number", "Flexible Group Request",
+    "Sub-Agreement External ID", "Payout Group", "Attain Group", "Rate", "Target Type", "Target Value", "Target Unit", "Valid From", "Valid To",
     "Bracket", "Scale Type", "Unit", "Unit Type",
-    "Dimension Value1", "Rate",
-    "Sub-Agreement External ID", "Payout Group", "Rate Type", "Rate", "Payout Unit", "Payout Uni", "Dummy",
+    "Dimension Value1", "Rate", "Calculation Derivation Record",
+    "Sub-Agreement External ID", "Payout Group", "Attain Group", "Rate", "Target Type", "Target Value", "Target Unit", "Valid From", "Valid To",
     "Bracket", "Scale Type", "Unit", "Unit Type",
-    "Dimension Value1", "Rate",
+    "Dimension Value1", "Rate", "Calculation Derivation Record",
     "Sub-Agreement External ID", "Payout Group", "Rate", "Valid From", "Valid To"
 ]
 
@@ -319,31 +330,77 @@ def convert_upload_to_output(input_upload_file='Upload Format.xlsx',
     
     # Pre-normalize template column headers for fast flexible matching
     norm_col_row = [normalize_str(c) for c in col_row]
+
+    # Build section column ranges dynamically from tag_row headers
+    def build_dynamic_ranges(tag_row_list, total_cols):
+        blocks = []
+        for idx, tag in enumerate(tag_row_list):
+            if pd.notna(tag) and str(tag).strip():
+                blocks.append((str(tag).strip().upper(), idx))
+        
+        if not blocks:
+            return {}
+
+        raw_ranges = []
+        for i in range(len(blocks)):
+            tag_name, start_idx = blocks[i]
+            end_idx = blocks[i+1][1] - 1 if i + 1 < len(blocks) else total_cols - 1
+            raw_ranges.append((tag_name, start_idx, end_idx))
+
+        dynamic_ranges = {}
+        fghd_count = 0
+        fgit_count = 0
+        benefits_count = 0
+        bsa_count = 0
+        bs_count = 0
+
+        for tag_name, start_c, end_c in raw_ranges:
+            if tag_name == 'HEADER':
+                dynamic_ranges['HEADER'] = (start_c, end_c)
+            elif tag_name == 'AGRMT':
+                dynamic_ranges['AGRMT'] = (start_c, end_c)
+            elif tag_name == 'SUBAGRMT':
+                dynamic_ranges['SUBAGRMT'] = (start_c, end_c)
+            elif tag_name == 'ELCUST':
+                dynamic_ranges['ELCUST'] = (start_c, end_c)
+            elif tag_name == 'FGHD':
+                fghd_count += 1
+                key = 'FGHD_CUST' if fghd_count == 1 else ('FGHD_PRD' if fghd_count == 2 else f'FGHD_{fghd_count}')
+                dynamic_ranges[key] = (start_c, end_c)
+            elif tag_name == 'FGIT':
+                fgit_count += 1
+                key = 'FGIT_CUST' if fgit_count == 1 else ('FGIT_PRD' if fgit_count == 2 else f'FGIT_{fgit_count}')
+                dynamic_ranges[key] = (start_c, end_c)
+            elif tag_name == 'ELGBBASE':
+                dynamic_ranges['ELGBBASE'] = (start_c, end_c)
+            elif tag_name == 'ELGBASEVAL':
+                dynamic_ranges['ELGBASEVAL'] = (start_c, end_c)
+            elif tag_name == 'ELGBPRDGRP':
+                dynamic_ranges['ELGBPRDGRP'] = (start_c, end_c)
+            elif tag_name == 'BENEFITS':
+                benefits_count += 1
+                key = 'BENEFITS' if benefits_count == 1 else f'BENEFITS{benefits_count}'
+                dynamic_ranges[key] = (start_c, end_c)
+            elif tag_name == 'BSA':
+                bsa_count += 1
+                key = 'BSA' if bsa_count == 1 else f'BSA{bsa_count}'
+                dynamic_ranges[key] = (start_c, end_c)
+            elif tag_name == 'BS':
+                bs_count += 1
+                key = 'BS' if bs_count == 1 else f'BS{bs_count}'
+                dynamic_ranges[key] = (start_c, end_c)
+            elif tag_name == 'ACCRTE':
+                dynamic_ranges['ACCRTE'] = (start_c, end_c)
+            else:
+                dynamic_ranges[tag_name] = (start_c, end_c)
+
+        return dynamic_ranges
+
+    ranges = build_dynamic_ranges(tag_row, num_cols)
     
     def get_col_index(section_key, col_name):
         col_name_clean = str(col_name).strip()
         norm_in_col = normalize_str(col_name_clean)
-        
-        ranges = {
-            'HEADER': (0, 0),
-            'AGRMT': (1, 6),
-            'SUBAGRMT': (7, 14),
-            'ELCUST': (15, 19),
-            'FGHD_CUST': (20, 26),
-            'FGIT_CUST': (27, 55),
-            'ELGBBASE': (56, 57),
-            'ELGBASEVAL': (58, 64),
-            'ELGBPRDGRP': (65, 71),
-            'FGHD_PRD': (72, 78),
-            'FGIT_PRD': (79, 107),
-            'BENEFITS': (144, 150),
-            'BSA': (151, 154),
-            'BS': (155, 156),
-            'BENEFITS2': (157, 163),
-            'BSA2': (164, 167),
-            'BS2': (168, 169),
-            'ACCRTE': (170, 174),
-        }
         
         if section_key not in ranges:
             return None
