@@ -250,15 +250,19 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
                 sub_ext_id = curr_sub['subagrmt'].get('Sub Agreement External ID', '')
                 
                 # ELCUST
-                cust_ext_id = get_val(row_list, 'ELCUST', 'Customer External ID')
-                if cust_ext_id:
-                    add_if_unique(curr_sub['elcust'], {
+                cust_ext_id = get_val(row_list, 'ELCUST', 'Customer External ID') or ''
+                flex_group = get_val(row_list, 'ELCUST', 'Flexible Group') or ''
+                if cust_ext_id or flex_group:
+                    el_key = f"{cust_ext_id}_{flex_group}"
+                    el_item = {
                         'Sub-Agreement External ID': get_val(row_list, 'ELCUST', 'Sub-Agreement External ID') or sub_ext_id,
                         'Customer External ID': cust_ext_id,
-                        'Flexible Group': get_val(row_list, 'ELCUST', 'Flexible Group') or '',
+                        'Flexible Group': flex_group,
                         'Valid From': get_val(row_list, 'ELCUST', 'Valid From') or '',
                         'Valid To': get_val(row_list, 'ELCUST', 'Valid To') or ''
-                    }, 'Customer External ID')
+                    }
+                    if not any(f"{x.get('Customer External ID', '')}_{x.get('Flexible Group', '')}" == el_key for x in curr_sub['elcust']):
+                        curr_sub['elcust'].append(el_item)
 
                 # ELGBBASE
                 base_val = get_val(row_list, 'ELGBBASE', 'Base Value')
@@ -299,12 +303,13 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
                     }, 'Description')
 
                 # FGIT Cust
-                fgit_c_cat = get_val(row_list, 'FGIT_CUST', 'Flexible Group Category')
-                if fgit_c_cat:
+                fgit_c_cat = get_val(row_list, 'FGIT_CUST', 'Flexible Group Category') or ''
+                mat_ext_id = get_val(row_list, 'FGIT_CUST', 'Material External ID') or ''
+                if fgit_c_cat or mat_ext_id:
                     fgit_c_item = {
                         'Flexible Group Category': fgit_c_cat,
                         'Include/Exclude': get_val(row_list, 'FGIT_CUST', 'Include/Exclude') or 'X',
-                        'Material External ID': get_val(row_list, 'FGIT_CUST', 'Material External ID') or '',
+                        'Material External ID': mat_ext_id,
                         'Material Group': get_val(row_list, 'FGIT_CUST', 'Material Group') or '',
                         'Capacity': get_val(row_list, 'FGIT_CUST', 'Capacity') or '',
                         'Customer Group': get_val(row_list, 'FGIT_CUST', 'Customer Group') or '',
@@ -322,7 +327,7 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
                         curr_sub['fgit_cust'].append(fgit_c_item)
 
                 # ELGBPRDGRP
-                grp_name = get_val(row_list, 'ELGBPRDGRP', 'Group Name')
+                grp_name = get_val(row_list, 'ELGBPRDGRP', 'Group Name') or get_val(row_list, 'ELGBPRDGRP', 'Flexible Group')
                 if grp_name:
                     add_if_unique(curr_sub['elgbprdgrp'], {
                         'Sub-Agreement External ID': get_val(row_list, 'ELGBPRDGRP', 'Sub-Agreement External ID') or sub_ext_id,
@@ -348,12 +353,13 @@ def convert_output_to_upload(input_output_file='output1.xlsx', output_reverse_fi
                     }, 'Description')
 
                 # FGIT Prd
-                fgit_p_cat = get_val(row_list, 'FGIT_PRD', 'Flexible Group Category')
-                if fgit_p_cat:
+                fgit_p_cat = get_val(row_list, 'FGIT_PRD', 'Flexible Group Category') or ''
+                fgit_p_mat = get_val(row_list, 'FGIT_PRD', 'Material External ID') or ''
+                if fgit_p_cat or fgit_p_mat:
                     fgit_p_item = {
                         'Flexible Group Category': fgit_p_cat,
                         'Include/Exclude': get_val(row_list, 'FGIT_PRD', 'Include/Exclude') or 'X',
-                        'Material External ID': get_val(row_list, 'FGIT_PRD', 'Material External ID') or '',
+                        'Material External ID': fgit_p_mat,
                         'Product Hierarchy': get_val(row_list, 'FGIT_PRD', 'Product Hierarchy') or '',
                         'Material Group': get_val(row_list, 'FGIT_PRD', 'Material Group') or '',
                         'Capacity': get_val(row_list, 'FGIT_PRD', 'Capacity') or '',
