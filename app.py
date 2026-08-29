@@ -18,6 +18,53 @@ APP_PASS = os.getenv("APP_PASS", "vistex2026")
 SECRET_KEY = os.getenv("SECRET_KEY", "vistex_secret_key_2026_internal_server")
 ALGORITHM = "HS256"
 
+NEW_USERS_PASS = "Ifbgoa123$#"
+
+USERS_DB = {
+    "admin": {"password": APP_PASS, "name": "Administrator"},
+    "gaurav_gupta@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Gaurav Gupta"},
+    "priya_vishvas@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Priya Dhawan"},
+    "lekhika_gupta@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Lekhika Gupta"},
+    "siddharath_bhatia@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Siddharth Bhatia"},
+    "manoj_sharma@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Manoj Sharma"},
+    "kundan_jha@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Kundan Jha"},
+    "arnim_saini@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Arnim Saini"},
+    "aneesh_aggarwal@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Aneesh Aggarwal"},
+    "dineshwar_pathania@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Dineshwar Singh Pathania"},
+    "chirag_gautam@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Chirag Gautam"},
+    "dinesh_verma@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Dinesh Verma"},
+    "puneet_mehra@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Puneet Mehra"},
+    "rahul@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Rahul Mahajan"},
+    "piyush_jain@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Piyush Jain"},
+    "ankit_dubey@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Ankit Dube"},
+    "rishabh_bhardwaj@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Rishabh Bhardwaj"},
+    "ankit@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Ankit Goyal"},
+    "bhavya_sanghavi@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Bhavya Sanghvi"},
+    "janmesh_shah@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Janmesh Shah"},
+    "chetan_chopra@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Chetan Chopra"},
+    "rohit_sanyal@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Rohit Sanyal"},
+    "kousik_chatterjee@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Kousik Chatterjee"},
+    "kommineni_sriharsha@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Kommineni Sriharsha"},
+    "shaubhick_paul@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Shaubhick Paul"},
+    "pranjal_dey@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Pranjal Dey"},
+    "manish_nawani@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Manish Kumar"},
+    "orissa_accounts@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Ved Prakash"},
+    "prosenjit_chowdhury@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Prasenjit Chowdhury"},
+    "prasanth_j@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "J Prasanth"},
+    "murugesa_pandian@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Murugesh.J"},
+    "sailendra_singh@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Shailendra Singh"},
+    "konki_sunil@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Konki Sunil"},
+    "manapragada_lalita@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Manapragada Lalita"},
+    "modadugu_kumar@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Chandra Kumar Modadugu"},
+    "d_prabhakar@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Prabhakar Dasagani"},
+    "usman_m@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Usman Maniyal"},
+    "joby_jose@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Joby Jose"},
+    "som@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Som Mascharak"},
+    "a_jaiswal@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Ashish Jaiswal"},
+    "aaron_victor@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Aaron Victor"},
+    "dinesh_joshi@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Dinesh Joshi"}
+}
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_STORAGE_DIR = os.path.join(BASE_DIR, "Temp")
 os.makedirs(TEMP_STORAGE_DIR, exist_ok=True)
@@ -28,19 +75,19 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 
-def create_session_token(username: str) -> str:
+def create_session_token(username: str, user_name: str) -> str:
     expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-    payload = {"sub": username, "exp": expiration}
+    payload = {"sub": username, "name": user_name, "exp": expiration}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_current_user(request: Request) -> Optional[str]:
+def get_current_user(request: Request) -> Optional[dict]:
     token = request.cookies.get("vistex_session")
     if not token:
         return None
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload.get("sub")
+        return {"username": payload.get("sub"), "name": payload.get("name", payload.get("sub"))}
     except Exception:
         return None
 
@@ -63,8 +110,10 @@ async def login_page(request: Request):
 
 @app.post("/api/login")
 async def api_login(username: str = Form(...), password: str = Form(...)):
-    if username == APP_USER and password == APP_PASS:
-        token = create_session_token(username)
+    uname_clean = username.strip().lower()
+    user_entry = USERS_DB.get(uname_clean)
+    if user_entry and user_entry["password"] == password:
+        token = create_session_token(uname_clean, user_entry["name"])
         response = JSONResponse({"success": True, "message": "Login successful"})
         response.set_cookie(
             key="vistex_session",

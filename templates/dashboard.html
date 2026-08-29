@@ -28,10 +28,15 @@
     </a>
 
     <div class="navbar-actions">
-      <!-- <div class="server-badge">
-        <span class="dot-online"></span>
-        <span>Internal Host: 10.0.7.26</span>
-      </div> -->
+      <div class="user-badge">
+        <div class="user-avatar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span>{{ user.name if user is mapping else user }}</span>
+      </div>
       <a href="/manuals" class="btn-nav">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
