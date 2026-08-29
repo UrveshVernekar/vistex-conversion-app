@@ -658,3 +658,212 @@ body {
   font-size: 0.83rem;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   Responsive Media Queries (Mobile, Tablet, Desktop)
+   ========================================================================== */
+
+/* Tablet & Small Laptops (<= 992px) */
+@media (max-width: 992px) {
+  .navbar {
+    padding: 14px 24px;
+  }
+
+  .main-container {
+    padding: 32px 20px;
+    max-width: 100%;
+  }
+
+  .glass-card {
+    padding: 24px;
+  }
+}
+
+/* Tablets & Small Screens (<= 768px) */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .navbar-brand {
+    gap: 10px;
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
+  }
+
+  .navbar-actions {
+    gap: 8px;
+  }
+
+  .user-badge {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    max-width: 160px;
+  }
+
+  .user-badge span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-nav, .btn-logout {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .dashboard-header p {
+    font-size: 0.9rem;
+  }
+
+  .dropzone {
+    padding: 36px 16px;
+  }
+
+  .dropzone-title {
+    font-size: 1rem;
+  }
+
+  .manual-item-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .manual-item-info {
+    width: 100%;
+  }
+
+  .btn-file-download {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .individual-downloads {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile Phones (<= 480px) */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .navbar {
+    padding: 10px 14px;
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-title {
+    font-size: 0.95rem;
+  }
+
+  .navbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .user-badge {
+    max-width: 130px;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .main-container {
+    padding: 20px 12px;
+  }
+
+  .glass-card {
+    padding: 18px 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .login-wrapper {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 24px 16px !important;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .dashboard-header p {
+    font-size: 0.82rem;
+  }
+
+  .form-select, .form-input {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .dropzone {
+    padding: 28px 12px;
+  }
+
+  .dropzone-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 12px;
+  }
+
+  .dropzone-title {
+    font-size: 0.92rem;
+  }
+
+  .dropzone-subtitle {
+    font-size: 0.78rem;
+  }
+
+  .btn-primary, .btn-zip-download {
+    padding: 12px 16px;
+    font-size: 0.92rem;
+  }
+
+  .result-card {
+    padding: 18px 14px;
+  }
+
+  .result-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .manuals-section-title {
+    font-size: 1.05rem;
+  }
+
+  .manual-details h3 {
+    font-size: 0.92rem;
+  }
+
+  .manual-details p {
+    font-size: 0.78rem;
+  }
+
+  .bg-orb-1, .bg-orb-2 {
+    width: 250px;
+    height: 250px;
+    opacity: 0.4;
+  }
+}
