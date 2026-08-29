@@ -640,6 +640,24 @@ def convert_upload_to_output(input_upload_file='Upload Format.xlsx',
                     row_data = [clean_cell_value(v) for v in row_data]
                     all_rows.append(row_data)
                     
+        # Prune completely empty optional repeating sections (e.g. BENEFITS2, BSA2, BS2, FGHD_3, FGIT_3)
+        cols_to_keep = []
+        for sec_key, (start_c, end_c) in ranges.items():
+            sec_has_data = False
+            for r_idx in range(3, len(all_rows)):
+                for c_idx in range(start_c, end_c + 1):
+                    val = all_rows[r_idx][c_idx]
+                    if pd.notna(val) and str(val).strip() != '':
+                        sec_has_data = True
+                        break
+                if sec_has_data:
+                    break
+            
+            if sec_has_data or sec_key not in ['BENEFITS2', 'BSA2', 'BS2', 'FGHD_3', 'FGIT_3']:
+                cols_to_keep.extend(range(start_c, end_c + 1))
+        
+        all_rows = [[row[c] for c in cols_to_keep] for row in all_rows]
+        
         df_out_sheet = pd.DataFrame(all_rows)
         df_out_sheet.to_excel(writer, sheet_name=sheet_name, index=False, header=False)
         
