@@ -62,7 +62,9 @@ USERS_DB = {
     "som@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Som Mascharak"},
     "a_jaiswal@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Ashish Jaiswal"},
     "aaron_victor@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Aaron Victor"},
-    "dinesh_joshi@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Dinesh Joshi"}
+    "dinesh_joshi@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Dinesh Joshi"},
+    "yatish_chum@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Yatish Chum"},
+    "chaitra_shetti@ifbglobal.com": {"password": NEW_USERS_PASS, "name": "Chaitra Shetti"}
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
